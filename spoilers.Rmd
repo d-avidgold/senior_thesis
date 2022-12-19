@@ -1,0 +1,141 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+niter = 15
+Xwins = rep(0, niter)
+Ywins = rep(0, niter)
+Zwins = rep(0, niter)
+nsims = 10000
+for (i in 1:niter) {
+    popln = i * 2 + 1
+    for (simno in 1:nsims) {
+        popln <- 25
+        X <- sign(runif(popln, -1, 1))
+        Y <- sign(runif(popln, -1, 1))
+        Z <- -1 * Y
+        if (sum(X) > 0 & sum(Z) < 0) { 
+            Xwins[i]  = Xwins[i] + 1
+        }
+        if (sum(Y) > 0 & sum(X) < 0) {
+            Ywins[i] = Ywins[i] + 1
+        }
+        if (sum(Z) > 0 & sum(Y) < 0) {
+            Zwins[i] = Zwins[i] + 1
+        }
+    }
+}
+Xwins
+Ywins
+Zwins
+
+plot((1:niter) * 2 + 1, Xwins/nsims, type = "b", col = "red", ylim = c(0, 1), main="Spoiled Election Results (Uniform)", xlab = "Population Size", ylab = "Probability of Victory")
+lines((1:niter) * 2 + 1, Ywins/nsims, type = "b", col = "blue")
+lines((1:niter) * 2 + 1, Zwins/nsims, type = "b", col = "green")
+#lines((1:niter) * 2 + 1, rep(.5, niter), type = "l", lty = 2, col = "grey")
+#lines((1:niter) * 2 + 1, rep(.25, niter), type = "l", lty = 2, col = "grey")
+legend("topright", legend=c("A", "B", "C"), col=c("red", "blue", "green"), lty=c(1, 1, 1), cex=1, title="Candidate")
+
+```
+
+```{r}
+niter = 15
+Xwins = rep(0, niter)
+Ywins = rep(0, niter)
+Zwins = rep(0, niter)
+nsims = 10000
+for (i in 1:niter) {
+    popln = i * 2 + 1
+    for (simno in 1:nsims) {
+        popln <- 25
+        X <- sign(runif(popln, -1, 1))
+        Y <- sign(runif(popln, -2, 3))
+        Z <- -1 * Y
+        if (sum(X) > 0 & sum(Z) < 0) { 
+            Xwins[i]  = Xwins[i] + 1
+        }
+        if (sum(Y) > 0 & sum(X) < 0) {
+            Ywins[i] = Ywins[i] + 1
+        }
+        if (sum(Z) > 0 & sum(Y) < 0) {
+            Zwins[i] = Zwins[i] + 1
+        }
+    }
+}
+Xwins
+Ywins
+Zwins
+
+plot((1:niter) * 2 + 1, Xwins/nsims, type = "b", col = "red", ylim = c(0, 1), main="Spoiled Election Results (Uniform)", xlab = "Population Size", ylab = "Probability of Victory")
+lines((1:niter) * 2 + 1, Ywins/nsims, type = "b", col = "blue")
+lines((1:niter) * 2 + 1, Zwins/nsims, type = "b", col = "green")
+#lines((1:niter) * 2 + 1, rep(.5, niter), type = "l", lty = 2, col = "grey")
+#lines((1:niter) * 2 + 1, rep(.25, niter), type = "l", lty = 2, col = "grey")
+legend("topright", legend=c("A", "B", "C"), col=c("red", "blue", "green"), lty=c(1, 1, 1), cex=0.8)
+
+```
+
+```{r}
+niter = 20
+Xwins11 = rep(0, niter+1)
+Ywins11 = rep(0, niter+1)
+Zwins11 = rep(0, niter+1)
+Xwins25 = rep(0, niter+1)
+Ywins25 = rep(0, niter+1)
+Zwins25 = rep(0, niter+1)
+nsims = 10000
+for (i in 0:niter) {
+    for (simno in 1:nsims) {
+        popln <- 11
+        X <- sign(runif(popln, -1, 1))
+        Y <- sign(runif(popln, i - niter, i))
+        Z <- -1 * Y
+        if (sum(X) > 0 & sum(Z) < 0) { 
+            Xwins11[i + 1]  = Xwins11[i + 1] + 1
+        }
+        if (sum(Y) > 0 & sum(X) < 0) {
+            Ywins11[i + 1] = Ywins11[i + 1] + 1
+        }
+        if (sum(Z) > 0 & sum(Y) < 0) {
+            Zwins11[i + 1] = Zwins11[i + 1] + 1
+        }
+        popln <- 25
+        X <- sign(runif(popln, -1, 1))
+        Y <- sign(runif(popln, i - niter, i))
+        Z <- -1 * Y
+        if (sum(X) > 0 & sum(Z) < 0) { 
+            Xwins25[i + 1]  = Xwins25[i + 1] + 1
+        }
+        if (sum(Y) > 0 & sum(X) < 0) {
+            Ywins25[i + 1] = Ywins25[i + 1] + 1
+        }
+        if (sum(Z) > 0 & sum(Y) < 0) {
+            Zwins25[i + 1] = Zwins25[i + 1] + 1
+        }
+    }
+}
+#Xwins
+#Ywins
+#Zwins
+
+plot((0:niter) /niter, (Xwins11+Ywins11)/nsims, type = "l", col = "red", ylim = c(0, 1), xlim = c(0, 1), main="Spoiled Election Results (Non-uniform)", xlab = "Probability of Favoring Party AB", ylab = "Probability of Victory")
+lines((0:niter) /niter, Zwins11/nsims, type = "l", col = "blue")
+lines((0:niter) /niter, (Xwins25+Ywins25)/nsims, type = "l", col = "red", lty = 2)
+lines((0:niter) /niter, Zwins25/nsims, type = "l", col = "blue", lty = 2)
+#lines((1:niter) * 2 + 1, rep(.5, niter), type = "l", lty = 2, col = "grey")
+#lines((1:niter) * 2 + 1, rep(.25, niter), type = "l", lty = 2, col = "grey")
+legend("right", legend=c("AB", "C"), col=c("red", "blue"), lty=c(1, 1, 1), cex=0.8, title = "Party")
+legend("left", legend=c(11, 25), lty=c(1, 2), cex=0.8, title = "Population Size")
+
+```
+
+```{r}
+
+```
+

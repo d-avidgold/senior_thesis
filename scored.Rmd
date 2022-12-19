@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+fullEfficiency <- function(AbeatsB, BbeatsC, CbeatsA) {
+    return(abs(AbeatsB) + abs(BbeatsC) + abs(CbeatsA) == 3 && abs(AbeatsB + BbeatsC + CbeatsA) == 1)
+}
+
+partialEfficiency <- function(AbeatsB, BbeatsC, CbeatsA) {
+    return((AbeatsB == 1 && CbeatsA == -1) || (BbeatsC == 1 && AbeatsB == -1) || (CbeatsA == 1 && BbeatsC == -1))
+}
+
+weakEfficiency <- function(AbeatsB, BbeatsC, CbeatsA) {
+    sumabs <- abs(AbeatsB) + abs(BbeatsC) + abs(CbeatsA) 
+    abssum <- abs(AbeatsB + BbeatsC +CbeatsA)
+    return((sumabs == 3 && abssum == 1) || (sumabs == 2 && abssum == 0) || sumabs == 1)
+}
+```
+
+
+```{r}
+generateScoresUnif <- function(popln, maxscore) {
+    Aranking <- sample(1:5, replace = TRUE)
+    Branking <- sample(1:5, replace = TRUE)
+    Cranking <- sample(1:5, replace = TRUE)
+    AoverB <- Aranking - Branking
+    BoverC <- Branking - Cranking
+    CoverA <- Cranking - Aranking
+    return(rbind(AoverB, BoverC, CoverA))
+} 
+
+generateScoresBinom <- function(popln, maxscore) {
+    Aranking <- rbinom(maxscore, popln, 1/2)
+    Branking <- rbinom(maxscore, popln, 1/2)
+    Cranking <- rbinom(maxscore, popln, 1/2)
+    AoverB <- Aranking - Branking
+    BoverC <- Branking - Cranking
+    CoverA <- Cranking - Aranking
+    return(rbind(AoverB, BoverC, CoverA))
+} 
+
+print(generateScores(5))
+```
+
+a
+a
+```{r}
+library(ggplot2)
+maxpopln = 100
+niters = 10000
+fullCondorc = rep(0, maxpopln)
+partialCondorc = rep(0, maxpopln)
+weakCondorc = rep(0, maxpopln)
+for (popln in 1:maxpopln) {
+    for (iterno in 1:niters) {
+        ballots <- generateScoresUnif(popln, 5)
+        # print(rbind(XoverY, YoverZ, ZoverX))
+        AbeatsB <- sign(sum(ballots[1,]))
+        BbeatsC <- sign(sum(ballots[2,]))
+        CbeatsA <- sign(sum(ballots[3,]))
+        fullCondorc[popln] = fullCondorc[popln] + fullEfficiency(AbeatsB, BbeatsC, CbeatsA)
+        partialCondorc[popln] = partialCondorc[popln] + partialEfficiency(AbeatsB, BbeatsC, CbeatsA)
+        weakCondorc[popln] = weakCondorc[popln] + weakEfficiency(AbeatsB, BbeatsC, CbeatsA)
+
+    }
+    fullCondorc[popln] = fullCondorc[popln] / niters
+    partialCondorc[popln] = partialCondorc[popln] / niters
+    weakCondorc[popln] = weakCondorc[popln] / niters
+}
+
+pop <- c(rbind(1:maxpopln, 1:maxpopln, 1:maxpopln))
+prob <- c(rbind(fullCondorc, partialCondorc, weakCondorc))
+type <- rep(c("Full", "Partial", "Weak"), maxpopln)
+df <- data.frame(pop, prob, type)
+#plot(1:maxpopln, fullCondorc)
+#plot(1:maxpopln, partialCondorc)
+ggplot(df) + geom_point(aes(x = pop, y = prob, col = type)) + ylim(0, 1) + xlab("Population Size") + ylab("Efficiency") + labs(color = "Type of Efficiency") + ggtitle("Efficiency by Population Size")
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+```{r}
+library(ggplot2)
+maxpopln = 100
+niters = 10000
+fullCondorc = rep(0, maxpopln)
+partialCondorc = rep(0, maxpopln)
+weakCondorc = rep(0, maxpopln)
+for (popln in 1:maxpopln) {
+    for (iterno in 1:niters) {
+        ballots <- generateScoresBinom(popln, 5)
+        # print(rbind(XoverY, YoverZ, ZoverX))
+        AbeatsB <- sign(sum(ballots[1,]))
+        BbeatsC <- sign(sum(ballots[2,]))
+        CbeatsA <- sign(sum(ballots[3,]))
+        fullCondorc[popln] = fullCondorc[popln] + fullEfficiency(AbeatsB, BbeatsC, CbeatsA)
+        partialCondorc[popln] = partialCondorc[popln] + partialEfficiency(AbeatsB, BbeatsC, CbeatsA)
+        weakCondorc[popln] = weakCondorc[popln] + weakEfficiency(AbeatsB, BbeatsC, CbeatsA)
+
+    }
+    fullCondorc[popln] = fullCondorc[popln] / niters
+    partialCondorc[popln] = partialCondorc[popln] / niters
+    weakCondorc[popln] = weakCondorc[popln] / niters
+}
+
+pop <- c(rbind(1:maxpopln, 1:maxpopln, 1:maxpopln))
+prob <- c(rbind(fullCondorc, partialCondorc, weakCondorc))
+type <- rep(c("Full", "Partial", "Weak"), maxpopln)
+df <- data.frame(pop, prob, type)
+#plot(1:maxpopln, fullCondorc)
+#plot(1:maxpopln, partialCondorc)
+par(mfrow=c(1, 2))
+ggplot(df) + geom_point(aes(x = pop, y = prob, col = type)) + ylim(0, 1) + xlab("Population Size") + ylab("Efficiency") + labs(color = "Type of Efficiency") + ggtitle("Efficiency by Population Size (Binomial Votes)") + scale_y_continuous(position = "right")
+ggplot(df1) + geom_point(aes(x = pop, y = prob, col = type)) + ylim(0, 1) + xlab("Population Size") + ylab("Efficiency") + labs(color = "Type of Efficiency") + ggtitle("Efficiency by Population Size (Uniform Votes)")
+```
+

@@ -1,0 +1,249 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+
+```{r}
+
+sgn <- function(x) {
+    if (x == 0) {
+        return(1)
+    }
+    return(sign(x))
+}
+lth <- function(x, c) {
+    return(sign(sum(x %*% c)))
+}
+```
+
+Calculate stability via simulation
+
+```{r}
+maxpopln = 101
+niters = 10000
+rho = 1/3
+same = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    ones = rep(1, popln)
+    for (iterno in 1:niters) {
+        votes = sign(runif(popln, -1, 1))
+        votestilde = votes * (1 - 2 * rbinom(popln, 1, (1 / 2) - (rho / 2)))
+        if (lth(votes, ones) == lth(votestilde, ones)) {
+            same[(popln + 1) / 2] = same[(popln + 1) / 2] + 1
+        }
+    }
+    same[(popln + 1) / 2] = same[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), same)
+```
+
+Calculate probability of Condorcet Winner via simulation
+
+```{r}
+maxpopln = 101
+niters = 50000
+condorc = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    ones = rep(1, popln)
+    for (iterno in 1:niters) {
+        XoverY = sign(runif(popln, -1, 1))
+        YoverZ = sign(runif(popln, -1, 1))
+        aresame = (XoverY * YoverZ + 1) / 2
+        arediff = 1 - aresame
+        ZoverX = arediff * sign(runif(popln, -1, 1)) - aresame * XoverY
+        # print(rbind(XoverY, YoverZ, ZoverX))
+        if (abs(lth(XoverY, ones) + lth(YoverZ, ones) + lth(ZoverX, ones)) < 3) {
+            condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] + 1
+        }
+    }
+    condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), condorc)
+```
+
+```{r}
+popln <- seq(1, maxpopln, 2)
+df <- data.frame(popln, condorc)
+
+library(ggplot2)
+
+ggplot(df) + geom_point(aes(x = popln, y = condorc)) + xlab("Population") + ylab("Condorcet Efficiency") + ggtitle("Condorcet Efficiency by Population")
+```
+
+
+```{r}
+maxpopln = 21
+niters = 100000
+rho = 1/2
+e = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    for (iterno in 1:niters) {
+        votes = sign(runif(popln, -1, 1))
+        votestilde = votes * (1 - 2 * rbinom(popln, 1, (1 / 2) - (rho / 2)))
+        e[[(popln + 1) / 2]] = e[[(popln + 1) / 2]] + lth(votes, 1:popln) * lth(votestilde, 1:popln)
+    }
+    same[(popln + 1) / 2] = same[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), same)
+```
+
+
+
+```{r}
+maxpopln = 101
+niters = 10000
+condorc = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    for (iterno in 1:niters) {
+        XoverY = sign(runif(popln, -1, 1))
+        YoverZ = sign(runif(popln, -1, 1))
+        aresame = (XoverY * YoverZ + 1) / 2
+        arediff = 1 - aresame
+        ZoverX = arediff * sign(runif(popln, -1, 1)) - aresame * XoverY
+        # print(rbind(XoverY, YoverZ, ZoverX))
+        if (abs(lth(XoverY, 1:popln) + lth(YoverZ, 1:popln) + lth(ZoverX, 1:popln)) < 3) {
+            condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] + 1
+        }
+    }
+    condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), condorc)
+```
+
+```{r}
+maxpopln = 21
+niters = 100000
+rho = 1/2
+same = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    if (popln > 1) {
+        weights = c(1, seq(2, 2 * popln - 2, 2))
+    } else {
+        weights = c(1) 
+    }
+    for (iterno in 1:niters) {
+        votes = sign(runif(popln, -1, 1))
+        votestilde = votes * (1 - 2 * rbinom(popln, 1, (1 / 2) - (rho / 2)))
+        if (lth(votes, weights) == lth(votestilde, weights)) {
+            same[(popln + 1) / 2] = same[(popln + 1) / 2] + 1
+        }
+    }
+    same[(popln + 1) / 2] = same[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), same)
+```
+
+```{r}
+maxpopln = 101
+niters = 10000
+condorc = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    ones = rep(1, popln)
+    for (iterno in 1:niters) {
+        XoverY = sign(runif(popln, -1, 1))
+        YoverZ = sign(runif(popln, -1, 1))
+        aresame = (XoverY * YoverZ + 1) / 2
+        arediff = 1 - aresame
+        ZoverX = arediff * sign(runif(popln, -1, 1)) - aresame * XoverY
+        
+        XoverYpartial = sample(c(-1, 0, 1), popln, replace = TRUE)
+        YoverZtilde = sample(c(-1, 0, 1), popln, replace = TRUE)
+        changes = sample(c(2, 3), popln, replace = TRUE)
+        YoverZtildemodif = (YoverZtilde + changes) %% 3 - 1
+        aresame = (XoverY == YoverZtilde)
+        arediff = 1 - aresame
+        YoverZpartial = arediff * YoverZtilde + aresame * YoverZtildemodif
+        ZoverXpartial = - XoverYpartial - YoverZpartial
+        
+        weights = (sign(runif(popln, -1, 1)) + 1) / 2
+        
+        XoverY = weights * XoverY + (1 - weights) * XoverYpartial
+        YoverZ = weights * YoverZ + (1 - weights) * YoverZpartial
+        ZoverX = weights * ZoverX + (1 - weights) * ZoverXpartial
+        XbeatsY = lth(XoverY, ones)
+        YbeatsZ = lth(YoverZ, ones)
+        ZbeatsX = lth(ZoverX, ones)
+        if (abs(XbeatsY + YbeatsZ + ZbeatsX) == 1 || abs(XbeatsY + YbeatsZ + ZbeatsX) == 0) {
+            condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] + 1
+        }
+    }
+    condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), condorc)
+```
+
+```{r}
+maxpopln = 51
+niters = 1
+condorc = rep(0, (maxpopln + 1) / 2)
+for (popln in seq(1, maxpopln, 2)) {
+    ones = rep(1, popln)
+    for (iterno in 1:niters) {
+        X = rbinom(popln, 1, .5)
+        Y = rbinom(popln, 1, .5)
+        Z = rbinom(popln, 1, .5)
+        XoverY = X - Y
+        YoverZ = Y - Z
+        ZoverX = Z - X
+        XbeatsY = lth(XoverY, ones)
+        YbeatsZ = lth(YoverZ, ones)
+        ZbeatsX = lth(ZoverX, ones)
+        print(XbeatsY, YbeatsZ, ZbeatsX)
+        if (abs(XbeatsY + YbeatsZ + ZbeatsX) == 1 || abs(XbeatsY + YbeatsZ + ZbeatsX) == 0) {
+            condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] + 1
+        }
+    }
+    condorc[(popln + 1) / 2] = condorc[(popln + 1) / 2] / niters
+}
+
+plot(1:((maxpopln + 1) / 2), condorc)
+```
+
+```{r}
+popln = 11
+niters = 1000
+ones = rep(1, popln)
+XbeatsYtotal = rep(0, niters)
+YbeatsZtotal = rep(0, niters)
+ZbeatsXtotal = rep(0, niters)
+for (iterno in 1:niters) {
+   
+   XoverY = sign(runif(popln, -1, 1))
+   YoverZ = sign(runif(popln, -1, 1))
+   aresame = (XoverY * YoverZ + 1) / 2
+   arediff = 1 - aresame
+   ZoverX = arediff * sign(runif(popln, -1, 1)) - aresame * XoverY
+   
+   XoverYpartial = sample(c(-1, 0, 1), popln, replace = TRUE)
+   YoverZtilde = sample(c(-1, 0, 1), popln, replace = TRUE)
+   changes = sample(c(2, 3), popln, replace = TRUE)
+   YoverZtildemodif = (YoverZtilde + changes) %% 3 - 1
+   aresame = (XoverY == YoverZtilde)
+   arediff = 1 - aresame
+   YoverZpartial = arediff * YoverZtilde + aresame * YoverZtildemodif
+   ZoverXpartial = - XoverYpartial - YoverZpartial
+   
+   weights = (sign(runif(popln, -1, 1)) + 1) / 2
+   
+   XoverY = weights * XoverY + (1 - weights) * XoverYpartial
+   YoverZ = weights * YoverZ + (1 - weights) * YoverZpartial
+   ZoverX = weights * ZoverX + (1 - weights) * ZoverXpartial
+   XbeatsYtotal[iterno] = lth(XoverY, ones)
+   YbeatsZtotal[iterno] = lth(YoverZ, ones)
+   ZbeatsXtotal[iterno] = lth(ZoverX, ones)
+}
+
+plot()
+mean(XbeatsYtotal)
+mean(YbeatsZtotal)
+mean(ZbeatsXtotal)
+```
+
